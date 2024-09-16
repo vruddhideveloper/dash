@@ -41,7 +41,7 @@ app.layout = html.Div([
         html.H2("Table 2", style={'color': '#34495e'}),
         dash_table.DataTable(
             id='table2',
-            columns=[{"name": i, "id": i} for i in ['T1', 'T2', 'T3', 'T4', 'T5', 'T3-T2', 'T4-T3', 'T5-T4', 'T5-T2']],
+            columns=[{"name": i, "id": i} for i in ['T2-T1', 'T3-T2', 'T4-T3', 'T5-T4', 'T5-T2']],
             data=df.to_dict('records'),
             style_table={'overflowX': 'auto'},
             style_cell={
