@@ -1,0 +1,32 @@
+This code defines a performance dashboard using the Dash framework, which allows for interactive visualizations and data tables. Key features include:
+
+1. **Date and Latency Selection**: Users can select a date from a `DatePicker` and choose a latency type from a dropdown to view specific data.
+2. **Toggle Views**: A button toggles between two views—data tables showing performance and timing metrics, or a histogram that visualizes the latency distribution.
+3. **Dynamic Data Loading**: The app loads CSV data based on the selected date and processes timestamps to calculate latencies between different time points (T1 to T5).
+4. **Custom Styling**: The app includes custom CSS for a clean and modern UI with elements like buttons, tables, and charts styled for clarity and ease of use.
+
+The app is set up with callbacks that update the content dynamically based on user input, offering a real-time dashboard experience.
+
+The dashboard includes a **histogram view**, which can be toggled by the "Toggle View" button. Here's a breakdown of how the histogram is displayed:
+
+1. **Latency Dropdown**: The dashboard has a dropdown (`latency-dropdown`) that allows the user to choose the type of latency they want to view in the histogram. Available options include:
+   - `T5-T4 Latency`
+   - `T4-T3 Latency`
+   - `T3-T2 Latency`
+   - `T2-T1 Latency`
+   - `T5-T2 Latency`
+
+2. **Toggle View Button**: When the "Toggle View" button is clicked, it switches between two display modes:
+   - **Table View**: Shows two tables displaying performance metrics and timing metrics.
+   - **Histogram View**: Displays a histogram based on the latency type selected from the dropdown.
+
+3. **Histogram Display**: In the histogram view, a Plotly graph shows the distribution of the selected latency. This chart updates dynamically based on the user’s choice from the dropdown.
+
+   - The histogram plots the frequency of latency values for the selected type, showing minimum, average, and maximum values in the statistics section next to the chart.
+
+Here’s where users can view the histogram:
+
+- When the user clicks the "Toggle View" button and switches to the histogram view (when the click count is odd), a chart representing the distribution of the selected latency is shown with a detailed statistical summary.
+- Users can select different latency types from the dropdown, and the histogram will update accordingly.
+
+This structure allows for flexible exploration of latency data in both tabular and visual formats.
