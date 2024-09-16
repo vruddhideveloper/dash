@@ -4,19 +4,10 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import plotly.graph_objs as go
 
-# Initialize the Dash app
 app = dash.Dash(__name__)
 
-# Assume we have a CSV file named 'data.csv'
 df = pd.read_csv('data.csv')
 
-# Calculate additional columns for the second table
-df['T3-T2'] = df['T3'] - df['T2']
-df['T4-T3'] = df['T4'] - df['T3']
-df['T5-T4'] = df['T5'] - df['T4']
-df['T5-T2'] = df['T5'] - df['T2']
-
-# Define the layout
 app.layout = html.Div([
     html.H1("Dashboard", style={'textAlign': 'center', 'color': '#2c3e50', 'font-family': 'Arial, sans-serif'}),
     
@@ -73,6 +64,5 @@ app.layout = html.Div([
     ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ecf0f1', 'borderRadius': '10px'})
 ])
 
-# Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
