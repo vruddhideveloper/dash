@@ -40,11 +40,11 @@ def process_event_data(event):
         "ts_thr_recv": nanoseconds_to_readable(event[2]),
         "ts_converted": nanoseconds_to_readable(event[3]),
         "ts_written": nanoseconds_to_readable(event[4]),
-        "Consecutive Difference 1 (s)": diffs[0],
-        "Consecutive Difference 2 (s)": diffs[1],
-        "Consecutive Difference 3 (s)": diffs[2],
-        "Consecutive Difference 4 (s)": diffs[3],
-        "Total Span (T5 - T2) (s)": total_span
+        "T2-T1": diffs[0],
+        "T3-T2": diffs[1],
+        "T4-T3": diffs[2],
+        "T5-T4": diffs[3],
+        "T5-T2": total_span
     }
 
 df = pd.DataFrame()
