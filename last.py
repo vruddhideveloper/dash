@@ -50,10 +50,25 @@ app.index_string = '''
                 background-color: #f8f9fa;
                 z-index: 1;
             }
-            .histogram {
-                width: 48%;
-                display: inline-block;
-                margin: 1%;
+            .histogram-card {
+                display: flex;
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+                margin: 20px;
+                padding: 20px;
+            }
+            .histogram-plot {
+                flex: 3;
+            }
+            .histogram-stats {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                font-size: 18px;
+                font-weight: bold;
             }
         </style>
     </head>
@@ -76,14 +91,14 @@ def load_data(date):
         df['T2'] = pd.to_datetime(df['T2'])
         df['T2_seconds'] = df['T2'].dt.floor('S')
         
-        # Calculate latency columns
+        # Calculate latency columns in nanoseconds
         for col in ['T1', 'T2', 'T3', 'T4', 'T5']:
             df[col] = pd.to_datetime(df[col])
-        df['T5-T4'] = (df['T5'] - df['T4']).dt.total_seconds() * 1000  # Convert to milliseconds
-        df['T4-T3'] = (df['T4'] - df['T3']).dt.total_seconds() * 1000
-        df['T3-T2'] = (df['T3'] - df['T2']).dt.total_seconds() * 1000
-        df['T2-T1'] = (df['T2'] - df['T1']).dt.total_seconds() * 1000
-        df['T5-T2'] = (df['T5'] - df['T2']).dt.total_seconds() * 1000
+        df['T5-T4'] = (df['T5'] - df['T4']).dt.total_seconds() * 1e9  # Convert to nanoseconds
+        df['T4-T3'] = (df['T4'] - df['T3']).dt.total_seconds() * 1e9
+        df['T3-T2'] = (df['T3'] - df['T2']).dt.total_seconds() * 1e9
+        df['T2-T1'] = (df['T2'] - df['T1']).dt.total_seconds() * 1e9
+        df['T5-T2'] = (df['T5'] - df['T2']).dt.total_seconds() * 1e9
         
         return df
     except FileNotFoundError:
@@ -107,12 +122,6 @@ app.layout = html.Div([
             display_format='YYYY-MM-DD',
             style={'margin': '10px'}
         ),
-        dcc.Dropdown(
-            id='timestamp-dropdown',
-            options=[],
-            placeholder="Select a specific timestamp",
-            style={'width': '300px', 'margin': '10px'}
-        ),
         html.Button('Toggle View', id='toggle-view', n_clicks=0, className='toggle-button'),
     ], style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center', 'backgroundColor': '#ecf0f1', 'padding': '20px', 'borderRadius': '10px', 'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)'}),
 
@@ -120,22 +129,15 @@ app.layout = html.Div([
 ], style={'backgroundColor': '#f5f6fa', 'padding': '20px', 'minHeight': '100vh'})
 
 @app.callback(
-    [Output('timestamp-dropdown', 'options'),
-     Output('content-container', 'children')],
+    Output('content-container', 'children'),
     [Input('date-picker', 'date'),
-     Input('timestamp-dropdown', 'value'),
      Input('toggle-view', 'n_clicks')]
 )
-def update_dashboard(selected_date, selected_timestamp, n_clicks):
+def update_dashboard(selected_date, n_clicks):
     df = load_data(selected_date)
     
     if df.empty:
-        return [], html.Div("No data available for the selected date.", style={'textAlign': 'center', 'marginTop': '20px', 'color': '#e74c3c', 'fontSize': '18px'})
-
-    timestamp_options = [{'label': ts, 'value': ts} for ts in df['T2_seconds'].dt.strftime('%H:%M:%S').unique()]
-    
-    if selected_timestamp:
-        df = df[df['T2_seconds'].dt.strftime('%H:%M:%S') == selected_timestamp]
+        return html.Div("No data available for the selected date.", style={'textAlign': 'center', 'marginTop': '20px', 'color': '#e74c3c', 'fontSize': '18px'})
 
     t2_counts = df['T2_seconds'].value_counts().sort_index()
     t2_df = pd.DataFrame({'Timestamp': t2_counts.index.strftime('%H:%M:%S'), 'Count': t2_counts.values})
@@ -158,34 +160,10 @@ def update_dashboard(selected_date, selected_timestamp, n_clicks):
     t2_hist.update_traces(marker_line_color='rgb(8,48,107)', marker_line_width=1.5)
     t2_hist.update_xaxes(tickangle=45, tickmode='array', tickvals=t2_df['Timestamp'])
 
-    # Create latency histograms
     latency_metrics = ['T5-T4', 'T4-T3', 'T3-T2', 'T2-T1', 'T5-T2']
-    colors = px.colors.qualitative.Bold
-    latency_hists = []
-
-    for i, metric in enumerate(latency_metrics):
-        fig = go.Figure()
-        fig.add_trace(go.Histogram(x=df[metric], name=metric, marker_color=colors[i]))
-        fig.update_layout(
-            title=dict(text=f'{metric} Latency Distribution', font=dict(size=22)),
-            xaxis_title=dict(text='Latency (ms)', font=dict(size=16)),
-            yaxis_title=dict(text='Frequency', font=dict(size=16)),
-            showlegend=False,
-            font=dict(family="Helvetica, Arial, sans-serif", size=14),
-            margin=dict(l=50, r=50, t=100, b=50),
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-        )
-        fig.add_annotation(x=0.5, y=1.15, 
-                           text=f'Avg: {df[metric].mean():.2f} ms<br>Min: {df[metric].min():.2f} ms<br>Max: {df[metric].max():.2f} ms',
-                           showarrow=False, xref='paper', yref='paper',
-                           font=dict(size=16, color=colors[i]))
-        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
-        latency_hists.append(dcc.Graph(figure=fig, className='histogram'))
 
     if n_clicks % 2 == 0:
-        return timestamp_options, [
+        return [
             html.Div([
                 html.H2("Performance Metrics", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '24px'}),
                 html.Div([
@@ -243,16 +221,58 @@ def update_dashboard(selected_date, selected_timestamp, n_clicks):
             ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'})
         ]
     else:
-        return timestamp_options, html.Div([
+        return html.Div([
             html.H2("Data Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '28px'}),
             html.Div([
-                html.Div([
-                    html.H3("T2 Timestamp Analysis (Second Precision)", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
-                    dcc.Graph(figure=t2_hist)
-                ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'}),
-                html.Div(latency_hists, style={'display': 'flex', 'flexWrap': 'wrap', 'justifyContent': 'space-around'})
-            ])
+                html.H3("T2 Timestamp Analysis (Second Precision)", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
+                dcc.Graph(figure=t2_hist)
+            ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'}),
+            html.Div([
+                html.H3("Latency Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
+                dcc.Dropdown(
+                    id='latency-dropdown',
+                    options=[{'label': metric, 'value': metric} for metric in latency_metrics],
+                    value=latency_metrics[0],
+                    style={'width': '50%', 'margin': '10px auto'}
+                ),
+                html.Div(id='latency-histogram-card', className='histogram-card')
+            ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'})
         ])
+
+@app.callback(
+    Output('latency-histogram-card', 'children'),
+    [Input('latency-dropdown', 'value'),
+     Input('date-picker', 'date')]
+)
+def update_latency_histogram(selected_metric, selected_date):
+    df = load_data(selected_date)
+    
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(x=df[selected_metric], name=selected_metric))
+    fig.update_layout(
+        title=dict(text=f'{selected_metric} Latency Distribution', font=dict(size=22)),
+        xaxis_title=dict(text='Latency (ns)', font=dict(size=16)),
+        yaxis_title=dict(text='Frequency', font=dict(size=16)),
+        showlegend=False,
+        font=dict(family="Helvetica, Arial, sans-serif", size=14),
+        margin=dict(l=50, r=50, t=100, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+    )
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
+    
+    return [
+        html.Div([
+            dcc.Graph(figure=fig)
+        ], className='histogram-plot'),
+        html.Div([
+            html.H4("Statistics", style={'fontSize': '24px', 'marginBottom': '20px'}),
+            html.P(f"Min: {df[selected_metric].min():.2f} ns", style={'fontSize': '18px'}),
+            html.P(f"Avg: {df[selected_metric].mean():.2f} ns", style={'fontSize': '18px'}),
+            html.P(f"Max: {df[selected_metric].max():.2f} ns", style={'fontSize': '18px'})
+        ], className='histogram-stats')
+    ]
 
 # Run the app
 if __name__ == '__main__':
