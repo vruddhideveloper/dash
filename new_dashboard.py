@@ -236,28 +236,6 @@ def update_dashboard(selected_date, n_clicks):
                 ),
                 html.Div(id='latency-histogram-card', className='histogram-card')
             ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'}),
-        #     html.Div([
-        #         html.H3("Insert/Update Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
-        #         html.Div([
-        #             dcc.Dropdown(
-        #                 id='insert-update-dropdown',
-        #                 options=[
-        #                     {'label': 'Insert', 'value': 'I'},
-        #                     {'label': 'Update', 'value': 'U'}
-        #                 ],
-        #                 value='I',
-        #                 style={'width': '45%', 'display': 'inline-block', 'marginRight': '5%'}
-        #             ),
-        #             dcc.Dropdown(
-        #                 id='latency-metric-dropdown',
-        #                 options=[{'label': metric, 'value': metric} for metric in latency_metrics],
-        #                 value='T5-T4',
-        #                 style={'width': '45%', 'display': 'inline-block'}
-        #             ),
-        #         ], style={'marginBottom': '20px'}),
-        #         html.Div(id='insert-update-histogram-card', className='histogram-card')
-        #     ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'})
-        # ])
             html.Div([
                 html.H3("Insert/Update Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
                 html.Div([
@@ -267,8 +245,14 @@ def update_dashboard(selected_date, n_clicks):
                             {'label': 'Insert', 'value': 'I'},
                             {'label': 'Update', 'value': 'U'}
                         ],
-                        value='I',  # Set default value to 'I' for Insert
-                        style={'width': '100%', 'marginBottom': '20px'}
+                        value='I',
+                        style={'width': '45%', 'display': 'inline-block', 'marginRight': '5%'}
+                    ),
+                    dcc.Dropdown(
+                        id='latency-metric-dropdown',
+                        options=[{'label': metric, 'value': metric} for metric in latency_metrics],
+                        value='T5-T4',
+                        style={'width': '45%', 'display': 'inline-block'}
                     ),
                 ], style={'marginBottom': '20px'}),
                 html.Div(id='insert-update-histogram-card', className='histogram-card')
