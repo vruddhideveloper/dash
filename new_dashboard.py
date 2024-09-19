@@ -236,7 +236,29 @@ def update_dashboard(selected_date, n_clicks):
                 ),
                 html.Div(id='latency-histogram-card', className='histogram-card')
             ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'}),
-            html.Div([
+        #     html.Div([
+        #         html.H3("Insert/Update Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
+        #         html.Div([
+        #             dcc.Dropdown(
+        #                 id='insert-update-dropdown',
+        #                 options=[
+        #                     {'label': 'Insert', 'value': 'I'},
+        #                     {'label': 'Update', 'value': 'U'}
+        #                 ],
+        #                 value='I',
+        #                 style={'width': '45%', 'display': 'inline-block', 'marginRight': '5%'}
+        #             ),
+        #             dcc.Dropdown(
+        #                 id='latency-metric-dropdown',
+        #                 options=[{'label': metric, 'value': metric} for metric in latency_metrics],
+        #                 value='T5-T4',
+        #                 style={'width': '45%', 'display': 'inline-block'}
+        #             ),
+        #         ], style={'marginBottom': '20px'}),
+        #         html.Div(id='insert-update-histogram-card', className='histogram-card')
+        #     ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'})
+        # ])
+        html.Div([
                 html.H3("Insert/Update Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
                 html.Div([
                     dcc.Dropdown(
@@ -245,14 +267,8 @@ def update_dashboard(selected_date, n_clicks):
                             {'label': 'Insert', 'value': 'I'},
                             {'label': 'Update', 'value': 'U'}
                         ],
-                        value='I',
-                        style={'width': '45%', 'display': 'inline-block', 'marginRight': '5%'}
-                    ),
-                    dcc.Dropdown(
-                        id='latency-metric-dropdown',
-                        options=[{'label': metric, 'value': metric} for metric in latency_metrics],
-                        value='T5-T4',
-                        style={'width': '45%', 'display': 'inline-block'}
+                        value='I',  # Set default value to 'I' for Insert
+                        style={'width': '100%', 'marginBottom': '20px'}
                     ),
                 ], style={'marginBottom': '20px'}),
                 html.Div(id='insert-update-histogram-card', className='histogram-card')
@@ -299,14 +315,49 @@ def update_latency_histogram(selected_metric, selected_date):
 @app.callback(
     Output('insert-update-histogram-card', 'children'),
     [Input('insert-update-dropdown', 'value'),
-     Input('latency-metric-dropdown', 'value'),
      Input('date-picker', 'date')]
 )
 
-def update_insert_update_histogram(selected_type, selected_metric, selected_date):
+# def update_insert_update_histogram(selected_type, selected_metric, selected_date):
+#     df = load_data(selected_date)
+    
+#     filtered_df = df[df['Insert/Update'] == selected_type]
+    
+#     fig = go.Figure()
+#     fig.add_trace(go.Histogram(x=filtered_df[selected_metric], name=f'{selected_type} {selected_metric}'))
+#     fig.update_layout(
+#         title=dict(text=f'{selected_type} {selected_metric} Latency Distribution', font=dict(size=22)),
+#         xaxis_title=dict(text='Latency (ns)', font=dict(size=16)),
+#         yaxis_title=dict(text='Frequency', font=dict(size=16)),
+#         showlegend=False,
+#         font=dict(family="Helvetica, Arial, sans-serif", size=14),
+#         margin=dict(l=50, r=50, t=100, b=50),
+#         plot_bgcolor='rgba(0,0,0,0)',
+#         paper_bgcolor='rgba(0,0,0,0)',
+#     )
+#     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
+#     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
+    
+#     return [
+#         html.Div([
+#             dcc.Graph(figure=fig)
+#         ], className='histogram-plot'),
+#         html.Div([
+#             html.H4("Statistics", style={'fontSize': '24px', 'marginBottom': '20px'}),
+#             html.P(f"Min: {filtered_df[selected_metric].min():.2f} ns", style={'fontSize': '18px'}),
+#             html.P(f"Mean: {filtered_df[selected_metric].mean():.2f} ns", style={'fontSize': '18px'}),
+#             html.P(f"Median: {filtered_df[selected_metric].median():.2f} ns", style={'fontSize': '18px'}),
+#             html.P(f"Max: {filtered_df[selected_metric].max():.2f} ns", style={'fontSize': '18px'})
+#         ], className='histogram-stats')
+#     ]
+
+# if __name__ == '__main__':
+#     app.run_server(debug=True)
+def update_insert_update_histogram(selected_type, selected_date):
     df = load_data(selected_date)
     
     filtered_df = df[df['Insert/Update'] == selected_type]
+    selected_metric = 'T5-T4'  # Fixed to T5-T4
     
     fig = go.Figure()
     fig.add_trace(go.Histogram(x=filtered_df[selected_metric], name=f'{selected_type} {selected_metric}'))
