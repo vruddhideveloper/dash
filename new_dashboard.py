@@ -90,7 +90,7 @@ def load_data(date):
         df = pd.read_csv(filename)
         df['T2'] = pd.to_datetime(df['T2'])
         df['T2_seconds'] = df['T2'].dt.floor('S')
-        
+        df['T2_formatted'] = df['T2'].dt.strftime('%H:%M:%S.%f')
         # Ensure latency columns are in nanoseconds
         latency_columns = ['T2-T1', 'T3-T2', 'T4-T3', 'T5-T4', 'T5-T2']
         for col in latency_columns:
@@ -168,7 +168,7 @@ def update_dashboard(selected_date, n_clicks):
                 html.Div([
                     dash_table.DataTable(
                         id='table1',
-                        columns=[{"name": i, "id": i} for i in ['ts_Amps', 'ts_tcp_recv', 'ts_thr_recv', 'ts_converted', 'ts_written']],
+                        columns=[{"name": i, "id": i} for i in ['ts_Amps', 'ts_tcp_recv', 'ts_thr_recv', 'ts_converted', 'ts_written'], {"name": "T2", "id": "T2_formatted"},],
                         data=df.to_dict('records'),
                         page_size=5,
                         style_cell={
@@ -236,6 +236,28 @@ def update_dashboard(selected_date, n_clicks):
                 ),
                 html.Div(id='latency-histogram-card', className='histogram-card')
             ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'}),
+        #     html.Div([
+        #         html.H3("Insert/Update Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
+        #         html.Div([
+        #             dcc.Dropdown(
+        #                 id='insert-update-dropdown',
+        #                 options=[
+        #                     {'label': 'Insert', 'value': 'I'},
+        #                     {'label': 'Update', 'value': 'U'}
+        #                 ],
+        #                 value='I',
+        #                 style={'width': '45%', 'display': 'inline-block', 'marginRight': '5%'}
+        #             ),
+        #             dcc.Dropdown(
+        #                 id='latency-metric-dropdown',
+        #                 options=[{'label': metric, 'value': metric} for metric in latency_metrics],
+        #                 value='T5-T4',
+        #                 style={'width': '45%', 'display': 'inline-block'}
+        #             ),
+        #         ], style={'marginBottom': '20px'}),
+        #         html.Div(id='insert-update-histogram-card', className='histogram-card')
+        #     ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'})
+        # ])
             html.Div([
                 html.H3("Insert/Update Analysis", style={'color': '#34495e', 'textAlign': 'center', 'fontSize': '22px'}),
                 html.Div([
@@ -245,19 +267,14 @@ def update_dashboard(selected_date, n_clicks):
                             {'label': 'Insert', 'value': 'I'},
                             {'label': 'Update', 'value': 'U'}
                         ],
-                        value='I',
-                        style={'width': '45%', 'display': 'inline-block', 'marginRight': '5%'}
-                    ),
-                    dcc.Dropdown(
-                        id='latency-metric-dropdown',
-                        options=[{'label': metric, 'value': metric} for metric in latency_metrics],
-                        value='T5-T4',
-                        style={'width': '45%', 'display': 'inline-block'}
+                        value='I',  # Set default value to 'I' for Insert
+                        style={'width': '100%', 'marginBottom': '20px'}
                     ),
                 ], style={'marginBottom': '20px'}),
                 html.Div(id='insert-update-histogram-card', className='histogram-card')
             ], style={'margin': '20px', 'padding': '20px', 'backgroundColor': '#ffffff', 'borderRadius': '10px', 'boxShadow': '0px 0px 10px rgba(0,0,0,0.1)'})
         ])
+
 
 @app.callback(
     Output('latency-histogram-card', 'children'),
