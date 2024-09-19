@@ -301,4 +301,39 @@ def update_latency_histogram(selected_metric, selected_date):
      Input('latency-metric-dropdown', 'value'),
      Input('date-picker', 'date')]
 )
-def update_insert_update
+
+def update_insert_update_histogram(selected_type, selected_metric, selected_date):
+    df = load_data(selected_date)
+    
+    filtered_df = df[df['Insert/Update'] == selected_type]
+    
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(x=filtered_df[selected_metric], name=f'{selected_type} {selected_metric}'))
+    fig.update_layout(
+        title=dict(text=f'{selected_type} {selected_metric} Latency Distribution', font=dict(size=22)),
+        xaxis_title=dict(text='Latency (ns)', font=dict(size=16)),
+        yaxis_title=dict(text='Frequency', font=dict(size=16)),
+        showlegend=False,
+        font=dict(family="Helvetica, Arial, sans-serif", size=14),
+        margin=dict(l=50, r=50, t=100, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+    )
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgrey')
+    
+    return [
+        html.Div([
+            dcc.Graph(figure=fig)
+        ], className='histogram-plot'),
+        html.Div([
+            html.H4("Statistics", style={'fontSize': '24px', 'marginBottom': '20px'}),
+            html.P(f"Min: {filtered_df[selected_metric].min():.2f} ns", style={'fontSize': '18px'}),
+            html.P(f"Mean: {filtered_df[selected_metric].mean():.2f} ns", style={'fontSize': '18px'}),
+            html.P(f"Median: {filtered_df[selected_metric].median():.2f} ns", style={'fontSize': '18px'}),
+            html.P(f"Max: {filtered_df[selected_metric].max():.2f} ns", style={'fontSize': '18px'})
+        ], className='histogram-stats')
+    ]
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
